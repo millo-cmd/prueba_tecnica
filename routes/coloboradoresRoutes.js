@@ -2,8 +2,16 @@ const express = require('express');
 const router = express.Router();
 const db = require('../database/db');
 
-router.post('/registratColaborador', (req, res) => {
+const checkRole = require('../middleware/middlewareauth');
+
+router.post('/registratColaborador', checkRole([1]), (req, res) => {
     const { nombre, apellido, direccion, edad, profesion, estadocivil } = req.body;
+    if(!nombre || !apellido || !edad){
+        return res.status(400).json({ mensaje: 'Nombre, apellido y edad son obligatorios' });
+    } else if( edad < 0 ){
+        return res.status(400).json({ mensaje: 'La edad es incorrecta, debe ser mayor a 0' });
+    }
+
     const query = 'CALL sp_agregar_colaborador(?, ?, ?, ?, ?, ?)';
     db.query(query, [nombre, apellido, direccion, edad, profesion, estadocivil], (err, result) => {
         if (err) return res.status(500).json(err);
@@ -29,7 +37,7 @@ router.get('/:id', (req, res) => {
     });
 });
 
-router.put('/editarColaborador/:id', (req, res) => {
+router.put('/editarColaborador/:id', checkRole([1]), (req, res) => {
     const { id } = req.params;
     const { nombre, apellido, direccion, edad, profesion, estadocivil } = req.body;
     const query = 'CALL sp_editar_colaborador(?, ?, ?, ?, ?, ?, ?)';
@@ -40,7 +48,7 @@ router.put('/editarColaborador/:id', (req, res) => {
     });
 });
 
-router.delete('/eliminarColaborador/:id', (req, res) => {
+router.delete('/eliminarColaborador/:id', checkRole([1]), (req, res) => {
     const { id } = req.params;
     const query = 'CALL sp_eliminar_colaborador(?)';
     db.query(query, [id], (err, result) => {
