@@ -23,7 +23,7 @@ router.get('/', (req, res) => {
     const query = 'CALL sp_mostrar_colaborador';
     db.query(query, (err, results) => {
         if (err) return res.status(500).json(err);
-        res.status(200).json(results);
+        res.status(200).json(results[0]);
     });
 });
 
